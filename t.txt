@@ -1,0 +1,285 @@
+python inference_fss.py \
+  --dataset_file fss \
+  --fold 0 \
+  --name_exp eval_fss \
+  --shot 1 \
+  --adaptformer_stages 2 \
+  --prompt mask 
+
+
+
+  python inference_fss.py --dataset_file vein_reta --resume output/train_fives_proper/checkpoint0019.pth --name_exp eval_vein_reta_vessel --shot 1 --adaptformer_stages 2 --prompt mask --sam2_version tiny --visualize
+
+
+  python inference_fss.py --dataset_file vein_reta --resume pretrain/adapter_sansa_universal.pth --name_exp eval_vein_reta_baseline --shot 1 --adaptformer_stages 2 --prompt mask --sam2_version tiny --visualize
+
+
+
+  python inference_fss.py --dataset_file fss --resume pretrain/adapter_sansa_universal.pth --name_exp eval_fss_adapter_uni_baseline --shot 1 --adaptformer_stages 2 --prompt mask --sam2_version tiny --visualize
+
+
+  python inference_fss.py --dataset_file fss --resume output/train_fives_proper/checkpoint0019.pth --name_exp eval_fss_vessel_adapter --shot 1 --adaptformer_stages 2 --prompt mask --sam2_version tiny --visualize
+
+
+
+python main.py \
+  --batch_size 32 \
+  --name_exp train_{ds}_f{FOLD} \   # run name
+  --dataset_file {coco|lvis|fss} \  # choose the benchmark
+  --fold {FOLD} \                   # fold to EVALUATE on; training uses the REMAINING folds
+  --adaptformer_stages 2 3 \        # adapters in the last two Hiera encoder stages
+  --prompt mask
+
+
+  PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py \
+  --batch_size 2 \
+  --resume pretrain/adapter_sansa_universal.pth \
+  --name_exp train_fives_stages_2_3 \
+  --dataset_file fives \
+  --adaptformer_stages 2 3 \
+  --prompt mask \
+  --epochs 20 \
+  --sam2_version tiny \
+  --no_distributed
+
+
+
+python inference_fss.py --dataset_file vein_reta --resume output/train_fives_stages_2_3/checkpoint0019.pth --name_exp eval_gavaTrain_reta_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+  
+
+python inference_fss.py --dataset_file vein_reta --resume pretrain/adapter_sansa_universal.pth --name_exp eval_reta_baseline_stage_2 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+
+
+--Both branches jointly trained
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adapter_sansa_universal.pth \
+--name_exp train_fives_adaptformer_plus_graph_stages_2_3 --data_root /home/raiyan/THESIS/SANSA/data \
+--dataset_file fives --adaptformer_stages 2 3 \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+
+--Only adaptformer
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adapter_sansa_universal.pth \
+--name_exp train_fives_adaptformer_only_stages_2_3 --data_root /home/raiyan/THESIS/SANSA/data \
+--dataset_file fives --adaptformer_stages 2 3 --vessel_adapter_stages -1 \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+
+--Only the graphbranch on top, freeze the adaptformer
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume output/train_fives_adaptformer_only_stages_2_3/checkpoint0019.pth \
+--name_exp train_fives_graph_only_on_frozen_adaptformer --data_root /home/raiyan/THESIS/SANSA/data \
+--dataset_file fives --adaptformer_stages 2 3 --freeze_adapter \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+
+
+python inference_fss.py --dataset_file vein_reta --resume output/train_fives_adaptformer_plus_graph_stages_2_3/checkpoint0019.pth --name_exp eval_adaptformerplusgraph_reta_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+
+
+--Both branches jointly trained(Stage 2 only)
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adapter_sansa_universal.pth \
+--name_exp train_fives_adaptformer_plus_graph_stages_2 --data_root /home/raiyan/THESIS/SANSA/data \
+--dataset_file fives --adaptformer_stages 2 \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+
+--Both branches jointly trained(Stage 3 only)
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adapter_sansa_universal.pth \
+--name_exp train_fives_adaptformer_plus_graph_stages_3 --data_root /home/raiyan/THESIS/SANSA/data \
+--dataset_file fives --adaptformer_stages 3 \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+
+
+
+/home/raiyan/THESIS/SANSA/output/train_fives_adaptformer_plus_graph_stages_2/checkpoint0019.pth
+
+--Evaluate(Reta 1 shot) on graph plus adapformer on stage 2 only
+python inference_fss.py --dataset_file vein_reta --resume output/train_fives_adaptformer_plus_graph_stages_2/checkpoint0019.pth --name_exp eval_adaptformerplusgraph_reta_1_shot_stage_2 --shot 1 --adaptformer_stages 2 --prompt mask --sam2_version tiny --visualize 
+
+
+python inference_fss.py \
+--dataset_file vein_reta \
+--resume output/train_fives_adaptformer_plus_graph_stages_2_3/checkpoint0019.pth \
+--name_exp eval_adaptformerplusgraph_reta_2_shot_stage_2_3 \
+--shot 2 \
+--adaptformer_stages 2 3 \
+--prompt mask \
+--sam2_version tiny 
+
+
+python inference_fss.py --dataset_file vein_reta --resume output/train_fives_adaptformer_plus_graph_stages_2_3/checkpoint0019.pth --name_exp eval_adaptformerplusgraph_reta_5_shot_stage_2__3 --shot 5 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize 
+
+
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adapter_sansa_universal.pth \
+--name_exp train_fives_adaptformer_only_stages_2_3_multishot --data_root /home/raiyan/THESIS/SANSA/data \
+--dataset_file fives --adaptformer_stages 2 3 --vessel_adapter_stages -1 \
+--shots 5 --J 5 \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adapter_sansa_universal.pth \
+--name_exp train_fives_adaptformer_plus_graph_stages_2_3_multishot --data_root /home/raiyan/THESIS/SANSA/data \
+--dataset_file fives --adaptformer_stages 2 3 \
+--shots 5 --J 5 \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+python inference_fss.py --dataset_file vein_reta --resume output/train_fives_adaptformer_only_stages_2_3_multishot/checkpoint0019.pth --name_exp eval_adaptformeronly_multishot_reta_5_shot_stage_2__3 --shot 5 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize 
+
+
+
+python inference_fss.py \
+--dataset_file deepglobe_road \
+--resume output/train_fives_adaptformer_plus_graph_stages_2_3/checkpoint0019.pth \
+--name_exp eval_adaptformerplusgraph_DGR_1_shot_stage_2_3 \
+--shot 1 \
+--adaptformer_stages 2 3 \
+--prompt mask \
+--sam2_version tiny \
+--visualize
+
+
+
+python main.py \
+  --batch_size 2 \
+  --resume pretrain/adapter_sansa_universal.pth \
+  --name_exp train_DGR_stages_2_3 \
+  --dataset_file deepglobe_road \
+  --adaptformer_stages 2 3 \
+  --prompt mask \
+  --epochs 20 \
+  --sam2_version tiny \
+  --no_distributed
+
+  PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume output/train_fives_adaptformer_only_stages_2_3/checkpoint0019.pth \
+--name_exp train_fives_graph_only_on_frozen_adaptformer --data_root /home/raiyan/THESIS/SANSA/data \
+--dataset_file fives --adaptformer_stages 2 3 --freeze_adapter \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+
+--Evaluate (DeepCrack test, 1 shot) graph + adaptformer trained on FIVES, stages 2 3
+python inference_fss.py --dataset_file deepcrack --resume output/train_fives_adaptformer_plus_graph_stages_2_3/checkpoint0019.pth --name_exp eval_adaptformerplusgraph_deepcrack_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+
+
+--Base SANSA on DeepCrack (tiny: universal adapters do not load into tiny, so this is plain SAM2-tiny)
+python inference_fss.py --dataset_file deepcrack --resume pretrain/adapter_sansa_universal.pth --name_exp eval_base_sansa_tiny_deepcrack_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --vessel_adapter_stages -1 --prompt mask --sam2_version tiny --visualize
+
+--Base SANSA on DeepCrack (large: the real pretrained universal SANSA)
+python inference_fss.py --dataset_file deepcrack --resume pretrain/adapter_sansa_universal.pth --name_exp eval_base_sansa_large_cf08_deepcrack_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --vessel_adapter_stages -1 --channel_factor 0.8 --prompt mask --sam2_version large --visualize
+
+--Evaluate AdaptFormer only (vanilla SANSA fine-tuned on FIVES, from fineTune/SANSA repo) on DeepCrack
+python inference_fss.py --dataset_file deepcrack --resume /home/raiyan/THESIS/fineTune/SANSA/output/train_fineTuneSANSA_fives_stages_2_3/checkpoint0019.pth --name_exp eval_fineTuneSANSA_adaptformeronly_deepcrack_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --vessel_adapter_stages -1 --prompt mask --sam2_version tiny --visualize
+
+
+--Graph + adaptformer on FIVES WITH thin-structure augmentation (--thin_aug: per-frame zoom 0.5-2x / flips / rot90, per-episode contrast inversion / grayscale / channel perm / jitter / blur). Same recipe otherwise.
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adapter_sansa_universal.pth \
+--name_exp train_fives_adaptformer_plus_graph_stages_2_3_thinaug --data_root data \
+--dataset_file fives --adaptformer_stages 2 3 --thin_aug \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+--Evaluate thin_aug graph + adaptformer (FIVES) on RETA and DeepCrack, 1 shot
+python inference_fss.py --dataset_file vein_reta --resume output/train_fives_adaptformer_plus_graph_stages_2_3_thinaug/checkpoint0019.pth --name_exp eval_adaptformerplusgraph_thinaug_vein_reta_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+python inference_fss.py --dataset_file deepcrack --resume output/train_fives_adaptformer_plus_graph_stages_2_3_thinaug/checkpoint0019.pth --name_exp eval_adaptformerplusgraph_thinaug_deepcrack_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+
+
+--Train on DeepCrack train split (260 imgs; 40 held out for per-epoch validation so the official test set stays unseen)
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adapter_sansa_universal.pth \
+--name_exp train_deepcrack_adaptformer_plus_graph_stages_2_3 --data_root data \
+--dataset_file deepcrack --deepcrack_val holdout --adaptformer_stages 2 3 \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adapter_sansa_universal.pth \
+--name_exp train_deepcrack_adaptformer_only_stages_2_3 --data_root data \
+--dataset_file deepcrack --deepcrack_val holdout --adaptformer_stages 2 3 --vessel_adapter_stages -1 \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+--Test them on the official DeepCrack test images (237) -- default --deepcrack_val test
+python inference_fss.py --dataset_file deepcrack --resume output/train_deepcrack_adaptformer_plus_graph_stages_2_3/checkpoint0019.pth --name_exp eval_deepcracktrain_graph_deepcrack_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+python inference_fss.py --dataset_file deepcrack --resume output/train_deepcrack_adaptformer_only_stages_2_3/checkpoint0019.pth --name_exp eval_deepcracktrain_adaptformeronly_deepcrack_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --vessel_adapter_stages -1 --prompt mask --sam2_version tiny --visualize
+
+
+--Train GAVA only on FIVES with the AdaptFormer branch FROZEN (resumes the FIVES-fine-tuned
+--AdaptFormer-only weights; the weights-only copy strips optimizer/epoch so training is not skipped)
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adaptformer_fives_stages_2_3_weights_only.pth \
+--name_exp train_fives_gava_only_frozen_adaptformer_stages_2_3 --data_root data \
+--dataset_file fives --adaptformer_stages 2 3 --freeze_adapter \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+--Evaluate it on RETA, 1 shot
+python inference_fss.py --dataset_file vein_reta --resume output/train_fives_gava_only_frozen_adaptformer_stages_2_3/checkpoint0019.pth --name_exp eval_gavaonly_frozenAF_vein_reta_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+
+--RESUME GAVA-only (frozen AdaptFormer) after power loss, from checkpoint0006 (restores optimizer, lr schedule, epoch -> continues at epoch 7)
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume output/train_fives_gava_only_frozen_adaptformer_stages_2_3/checkpoint0006.pth \
+--name_exp train_fives_gava_only_frozen_adaptformer_stages_2_3 --data_root data \
+--dataset_file fives --adaptformer_stages 2 3 --freeze_adapter \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+--RESUME again after load shedding, from checkpoint0010 (continues at epoch 11)
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume output/train_fives_gava_only_frozen_adaptformer_stages_2_3/checkpoint0010.pth \
+--name_exp train_fives_gava_only_frozen_adaptformer_stages_2_3 --data_root data \
+--dataset_file fives --adaptformer_stages 2 3 --freeze_adapter \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+--Evaluate GAVA-only (frozen AdaptFormer, FIVES-trained) on DeepCrack test, 1 shot
+python inference_fss.py --dataset_file deepcrack --resume output/train_fives_gava_only_frozen_adaptformer_stages_2_3/checkpoint0019.pth --name_exp eval_gavaonly_frozenAF_deepcrack_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+
+--Train GAVA only on DeepCrack (260 train imgs, 40 held out; test set unseen) with the DeepCrack-fine-tuned AdaptFormer FROZEN
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python main.py --batch_size 2 --resume pretrain/adaptformer_deepcrack_stages_2_3_weights_only.pth \
+--name_exp train_deepcrack_gava_only_frozen_adaptformer_stages_2_3 --data_root data \
+--dataset_file deepcrack --deepcrack_val holdout --adaptformer_stages 2 3 --freeze_adapter \
+--prompt mask --epochs 20 --sam2_version tiny --no_distributed
+
+--Evaluate it on the official DeepCrack test images (237), 1 shot
+python inference_fss.py --dataset_file deepcrack --resume output/train_deepcrack_gava_only_frozen_adaptformer_stages_2_3/checkpoint0019.pth --name_exp eval_deepcrack_gavaonly_frozenAF_deepcrack_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+
+--Evaluate GAVA-only (frozen AdaptFormer, FIVES-trained) on RETA, 5 shot
+python inference_fss.py --dataset_file vein_reta --resume output/train_fives_gava_only_frozen_adaptformer_stages_2_3/checkpoint0019.pth --name_exp eval_gavaonly_frozenAF_vein_reta_5_shot_stage_2_3 --shot 5 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny --visualize
+
+--ERROR ANALYSIS (RETA 1-shot): AdaptFormer vs GAVA. Needs scikit-image (installed into the sansa env).
+python output/error_analysis/run_predictions.py      # caches per-image predictions (reproduces 64.99 / 66.55 / 66.71)
+python output/error_analysis/analyze.py              # width-stratified recall, clDice, fragments, Wilcoxon + bootstrap CIs -> results.json
+python output/error_analysis/error_maps.py           # TP/FP/FN error maps + zoomed crops
+python output/error_analysis/width_recall_chart.py   # recall gain by vessel diameter chart
+
+--FIVES test set (200 images), 1 shot, standalone evaluation
+python inference_fss.py --dataset_file fives --resume pretrain/adapter_sansa_universal.pth --name_exp eval_base_sansa_tiny_fives_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --vessel_adapter_stages -1 --prompt mask --sam2_version tiny
+python inference_fss.py --dataset_file fives --resume /home/raiyan/THESIS/fineTune/SANSA/output/train_fineTuneSANSA_fives_stages_2_3/checkpoint0019.pth --name_exp eval_adaptformeronly_fives_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --vessel_adapter_stages -1 --prompt mask --sam2_version tiny
+python inference_fss.py --dataset_file fives --resume output/train_fives_adaptformer_plus_graph_stages_2_3/checkpoint0019.pth --name_exp eval_joint_graph_adaptformer_fives_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny
+python inference_fss.py --dataset_file fives --resume output/train_fives_gava_only_frozen_adaptformer_stages_2_3/checkpoint0019.pth --name_exp eval_gavaonly_frozenAF_fives_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --prompt mask --sam2_version tiny
+
+--EXTERNAL BASELINES on RETA (official Personalize-SAM code, SAM ViT-H, same 54 episodes)
+--  repo: /home/raiyan/THESIS/PerSAM  (weights: PerSAM/sam_ckpt/sam_vit_h_4b8939.pth)
+python output/persam_baseline/run_persam_reta.py vein_reta      # PerSAM training-free -> mIoU 11.67, FB-IoU 21.39
+python output/persam_baseline/run_persam_f_reta.py              # PerSAM-F fine-tuned  -> mIoU 10.30, FB-IoU 37.03
+
+--Published SANSA (SAM2-large, channel_factor 0.8) on RETA, 1 shot
+python inference_fss.py --dataset_file vein_reta --resume pretrain/adapter_sansa_universal.pth --name_exp eval_sansa_large_universal_cf08_vein_reta_1_shot_stage_2_3 --shot 1 --adaptformer_stages 2 3 --vessel_adapter_stages -1 --channel_factor 0.8 --prompt mask --sam2_version large
+
+--Comparison chart
+python output/sota_chart/make_reta_comparison_chart.py
+
+
+
+python inference_fss.py \
+--dataset_file vein_reta \
+--resume output/train_fives_adaptformer_plus_graph_stages_2_3/checkpoint0019.pth \
+--name_exp eval_adaptformerplusgraph_reta_10_shot_stage_2_3 \
+--shot 10 \
+--adaptformer_stages 2 3 \
+--prompt mask \
+--sam2_version tiny
