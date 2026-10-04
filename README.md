@@ -1,7 +1,7 @@
 # GAVA: A Graph-Aware Vessel Adapter for Few-Shot Segmentation of Thin Structures
 
 GAVA is a lightweight **graph adapter** inserted into the frozen SAM2 image encoder of
-[SANSA](README_SANSA.md). It runs in parallel to AdaptFormer and links each feature token to its most
+[SANSA](https://github.com/ClaudiaCuttano/SANSA). It runs in parallel to AdaptFormer and links each feature token to its most
 similar neighbours inside a local window, so evidence travels **along** vessel-like structures instead
 of only across square patches.
 
@@ -33,7 +33,7 @@ x_out = x + MLP(x) + s·AdaptFormer(x) + s·GAVA(x)        s = 0.1, SAM2 frozen
 All rows measured here on identical 1-shot episodes. PerSAM / PerSAM-F use the authors' official code.
 5-shot shows the same ordering (AdaptFormer 64.92, GAVA 66.62).
 
-![RETA comparison](output/sota_chart/reta_1shot_method_comparison.png)
+![RETA comparison](res/reta_1shot_method_comparison.png)
 
 ### Retinal vessels — FIVES test (200 images, 1-shot)
 
@@ -58,7 +58,7 @@ GAVA's improvement is concentrated on the thinnest vessels and on connectivity
 | Broken pieces per image (ground truth: 8.8) | 76.4 | 71.6 | −4.8 | |
 | mIoU | 64.99 | 66.71 | **+1.72** | better on **54/54** images |
 
-![Error maps](output/error_analysis/error_maps_reta_1shot.png)
+![Error maps](res/error_maps_reta_1shot.png)
 
 ### Cracks — DeepCrack test (237 unseen images, 1-shot)
 
@@ -91,7 +91,7 @@ The graph is rebuilt from features on every forward pass (dynamic k-NN, EdgeConv
 pre-segmentation or predefined vessel graph is needed. Windows keep the cost linear in image size;
 an earlier full-image graph ran out of memory.
 
-![GAVA graph rounds](output/gava_graph_viz/gava_graph_rounds.png)
+![GAVA graph rounds](res/gava_graph_rounds.png)
 
 Code: [`models/sansa/vessel_adapter.py`](models/sansa/vessel_adapter.py), wired in at
 [`models/sam2/modeling/backbones/hieradet.py`](models/sam2/modeling/backbones/hieradet.py).
@@ -100,8 +100,8 @@ Code: [`models/sansa/vessel_adapter.py`](models/sansa/vessel_adapter.py), wired 
 
 ## Setup
 
-Environment and SAM2 weights follow the original SANSA instructions — see
-[README_SANSA.md](README_SANSA.md). Extra packages used by the analysis scripts:
+Environment and SAM2 weights follow the original [SANSA](https://github.com/ClaudiaCuttano/SANSA)
+instructions — see [README_SANSA.md](README_SANSA.md). Extra packages used by the analysis scripts:
 
 ```bash
 pip install scikit-image        # skeleton-based metrics (clDice, vessel width)
@@ -206,8 +206,8 @@ Defaults reproduce the original SANSA behaviour.
 
 ## Acknowledgements and citation
 
-This repository extends **SANSA** (NeurIPS 2025 Spotlight); the original README, demos and
-pretrained models are preserved in [README_SANSA.md](README_SANSA.md).
+This repository extends **[SANSA](https://github.com/ClaudiaCuttano/SANSA)** (NeurIPS 2025 Spotlight);
+its original README, demos and pretrained models are preserved here in [README_SANSA.md](README_SANSA.md).
 
 ```bibtex
 @inproceedings{cuttano2025sansa,
